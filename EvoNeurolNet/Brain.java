@@ -1,7 +1,7 @@
 public class Brain {
     public double[][][] hidden_layers;     // this stores the layers; each layer contains neurons which contains weights and a bias
-    public double[][] output_layer;
-    /* 
+    public double[][] output_layer;        // store output layer in separate array because it's usually smaller
+    /*
     { Layer1: { Neuron1:{weight1, weight2, bias}, 
                 Neuron2:{weight1,weight2, bias}},  
       Layer2:{Neurons...},
@@ -28,7 +28,7 @@ public class Brain {
             }
         }
     }
-    // another constructor for a pre-defined brain
+    // another constructor used for a pre-defined brain
     public Brain(double[][][] hl, double[][] ol) {
         hidden_layers = hl;
         output_layer = ol;
@@ -80,7 +80,6 @@ public class Brain {
         //https://www.datacamp.com/tutorial/introduction-to-activation-functions-in-neural-networks
         // return (Math.exp(input) - Math.exp(-input)) / (Math.exp(input) + Math.exp(-input));
         return Math.tanh(input);
-
 
         // sigmoid activation function 
         // https://www.sciencedirect.com/topics/computer-science/sigmoid-function
