@@ -6,7 +6,6 @@ public class Agent {
     public int y;
     public int height;
     public int width;
-    public double velocity = 0;
     public boolean dead = false;
     public Brain brain;
     private double mutation_rate = 0.5;
@@ -17,8 +16,10 @@ public class Agent {
         this.y = y;
         height = h;
         width = w;
-        // 1 hidden layer with 6 neurons and 2 inputs (bird height and height of pipe) and 1 output
-        brain = new Brain(1, 8, 1);
+        // 1 hidden layer with 8 neurons and 5 inputs (coordinates of finish line (x,y),
+        // coordinates of agent (x,y), is touching wall (1 or 0, yes or no)) 
+        // and 4 output (move up (0, 1), move down (0,1), move left (0,1), move right (0, 1))
+        brain = new Brain(1, 8, 4);
     }
 
     public void draw(Graphics g) {
@@ -29,13 +30,12 @@ public class Agent {
 
     // insert a new brain copied from the best agent and mutate it
     public void new_brain(double[][][] hl, double[][] ol) {
-        // double[][][] new_hl = new double[hl.length][hl[0].length][hl[0][0].length];
-        double[][][] new_hl = hl.clone();
-        double[][] new_ol = ol.clone(); 
-
+        double[][] new_ol = deepCopy(ol); 
+        double[][][] new_hl = hl_copy(hl);
         for (int i = 0; i < new_hl.length; i++) 
-            mutate(new_hl[i]);
-        mutate(new_ol);
+            mutate(new_hl[i]);               // mutate every layer
+        mutate(new_ol);                      // mutate output layer 
+        // update brain with new layers
         brain.hidden_layers = new_hl;
         brain.output_layer = new_ol;
     }
@@ -46,26 +46,48 @@ public class Agent {
         for (int row = 0; row < layer.length; row++) {
             if (Math.random() > mutation_rate) {
                 for (int col = 0; col < layer[0].length; col++)
-                    layer[row][col] += Math.random() * mutation_size - (mutation_size/2);
+                    layer[row][col] += (Math.random() - 0.5) * mutation_size;
             }
         }
     }
 
-    // use the neural network to make decisions
-    public void perform_action(double input) {
+    // use the neural network to make decisions based on it's environment
+    public void perform_action(double[] inputs) {
         // TODO:  Use brain
-        double action = brain.run(new double[] {y, input})[0];  // 0 = don't flap and 1 = flap 
-        System.out.println(action);
-        if (action >= 1)
-            flap();
+        double[] actions = brain.run(inputs);  // left, right, up, down
+        // System.out.println(Math.round(actions[0]));
+        // System.out.println(Math.round(actions[1]));
+        // System.out.println(Math.round(actions[2]));
+        // System.out.println(Math.round(actions[3]));
+        if (Math.round(actions[0]) == 1)
+            x -= 5;
+        if (Math.round(actions[1]) == 1)
+            x += 5;
+        if (Math.round(actions[2]) == 1)
+            y -= 5;
+        if (Math.round(actions[3]) == 1)
+            y += 5;
     }
 
-    public void flap() {
-        velocity = -20;
+    // post: return fitness of agents
+    public double fitness(int goalx, int goaly) {
+        // lower numbers = greater fitness because fitness is calculated by measuring the distance  
+        return (Math.sqrt((Math.pow(goalx - x, 2) + Math.pow(goaly - y, 2)))); // sqrt(a^2 + b^2)
     }
 
-    public void update() {
-        y += velocity;
+    public double[][] deepCopy(double[][] original) {
+        double[][] copy = new double[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            copy[i] = original[i].clone(); // Properly clone sub-arrays
+        }
+        return copy;
     }
 
+    public double[][][] hl_copy(double[][][] hl) {
+        double[][][] new_hl = new double[hl.length][hl[0].length][hl[0][0].length];
+        for (int layer = 0; layer < new_hl.length; layer++)
+            new_hl[layer] = deepCopy(hl[layer]);
+        return new_hl;
+    }
+    
 }
