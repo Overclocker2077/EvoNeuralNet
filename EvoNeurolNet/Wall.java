@@ -17,8 +17,8 @@ public class Wall {
     }
 
     public boolean collides(int x1, int y1) {
-        return ((x1 >= x && x1 <= x+width) && (y1 >= y && y1 <= y+height) && 
-                (x1+10 >= x && x1+10 <= x+width) && (y1+10 >= y && y1+10 <= y+height));
+        return ((x1 >= x && x1 <= x+width) && (y1 >= y && y1 <= y+height) || 
+                (x1 >= x-10) && (y1+10 >= y && y1+10 <= y+height));
     }
 
     public void draw(Graphics g) {
