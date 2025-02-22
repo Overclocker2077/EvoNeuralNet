@@ -13,29 +13,30 @@ public class ObstacleCourse extends JPanel {
     private Timer t;
 
     Wall[] walls;          // obstacle
-    int num_of_agents = 80;
+    int num_of_agents = 2000;
     Agent[] agents = new Agent[num_of_agents];           // AI players
     Agent most_fit;           // keep track of most fit agent
     Agent prev_most_fit;       
-    int goalx = 950;
+    int goalx = 900;
     int goaly = 350;
     double[][][] most_fit_hidden_layers;    
     double[][] most_fit_output_layer;
 
     int win_width;      
     int win_height;
-    int startx = 100 + 700;
+    int startx = 100;
     int starty = 400;
     int timer = 0;
     int generation_count = 0;
     int touching = 0;
     int[] time = {0,0}; // survival time of current most fit and previous most fit
+    boolean end = false;
     
     public ObstacleCourse(int w, int h) {
         win_height = h;
         win_width = w;
         
-        // walls = new Wall[] {new Wall(150, win_height-600, 400, 15)};
+        walls = new Wall[] {new Wall(200, win_height-600, 400, 15)};
         // make 10 Agents for first generation 
         for (int i = 0; i < num_of_agents; i++)
             agents[i] = new Agent(startx, starty, 10,10);
@@ -48,8 +49,8 @@ public class ObstacleCourse extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // for (Wall wall: walls)
-        //     wall.draw(g);
+        for (Wall wall: walls)
+            wall.draw(g);
 
         g.drawString("Gen: " + generation_count, 10, 10);
         g.drawRect(goalx, goaly, 10, 10);
@@ -63,19 +64,24 @@ public class ObstacleCourse extends JPanel {
        public void actionPerformed(ActionEvent e)	//this is called for each timer iteration
        {
         
-        Point p = MouseInfo.getPointerInfo().getLocation();
-        goalx = p.x;
-        goaly = p.y;
-        // System.out.println(goalx + " " + goaly);
-        for (int i = 0; i < num_of_agents; i++) {
-            // for (Wall wall: walls) {
-            //     if (wall.collides(agents[i].x, agents[i].y))
-            //         touching = 1;
-            // }
-            agents[i].perform_action(new double[] {goalx, goaly, agents[i].x, agents[i].y, touching});
-            // touching = 0;
+        if (generation_count == 20 && !end) {
+            t.setDelay(15);
+            agents = new Agent[] {agents[0]};
+            end = true;
         }
-        if (timer > 180) {
+        // Point p = MouseInfo.getPointerInfo().getLocation();
+        // goalx = p.x;
+        // goaly = p.y;
+        // System.out.println(goalx + " " + goaly);
+        for (int i = 0; i < agents.length; i++) {
+            for (Wall wall: walls) {
+                if (wall.collides(agents[i].x, agents[i].y))
+                    touching = 1;
+            }
+            agents[i].perform_action(new double[] {goalx, goaly, agents[i].x, agents[i].y, touching});
+            touching = 0;
+        }
+        if (timer > 400 && !end) {
             for (int i = 0; i < num_of_agents; i++) {
                 //System.out.println(agents[i].fitness(goalx, goaly));
                 // fitness returns distance from the goal, so smaller value = better fitness
@@ -93,17 +99,21 @@ public class ObstacleCourse extends JPanel {
             // update population with most_fit
             most_fit_hidden_layers = most_fit.hl_copy(most_fit.brain.hidden_layers);  
             most_fit_output_layer = most_fit.deepCopy(most_fit.brain.output_layer);    
-            for (int i = 0; i < num_of_agents; i++) {
+            agents[0].brain.hidden_layers = most_fit.hl_copy(most_fit.brain.hidden_layers);
+            agents[0].brain.output_layer = most_fit.deepCopy(most_fit.brain.output_layer);
+            agents[0].x = startx;
+            agents[0].y = starty;
+            for (int i = 1; i < num_of_agents; i++) {
                 agents[i].new_brain(most_fit_hidden_layers, most_fit_output_layer);
                 agents[i].x = startx;
                 agents[i].y = starty;
             }
             timer = 0;
             generation_count++;
-            if (generation_count % 25 == 0) {
-                goaly = (int)(Math.random() * 500);
-                goalx = (int)(Math.random() * 500) + 500;
-            }
+            // if (generation_count % 25 == 0) {
+            //     goaly = (int)(Math.random() * 500);
+            //     goalx = (int)(Math.random() * 500) + 500;
+            // }
         }
 
         //System.out.println(timer);
