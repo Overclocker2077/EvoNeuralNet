@@ -79,8 +79,8 @@ public class Brain {
         //Tahn activation function 
         //https://www.datacamp.com/tutorial/introduction-to-activation-functions-in-neural-networks
         // return (Math.exp(input) - Math.exp(-input)) / (Math.exp(input) + Math.exp(-input));
-        return Math.tanh(input);
-
+        //return Math.tanh(input);
+        return 0.5 * Math.cbrt(input);  // Should be faster then tanh because it doesn't need to compute exponentials 
         // sigmoid activation function 
         // https://www.sciencedirect.com/topics/computer-science/sigmoid-function
         // return (double)(1 / (1 + Math.exp(-input)));
