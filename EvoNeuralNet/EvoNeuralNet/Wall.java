@@ -17,6 +17,7 @@ public class Wall {
     }
 
     public boolean collides(int x1, int y1) {
+        //WIP not finished with this logic 
         return ((x1 >= x && x1 <= x+width) && (y1 >= y && y1 <= y+height) || 
                 (x1 >= x-10) && (y1+10 >= y && y1+10 <= y+height));
     }
